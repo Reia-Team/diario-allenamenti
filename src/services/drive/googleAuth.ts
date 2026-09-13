@@ -45,9 +45,13 @@ export class AuthError extends Error {
 let token: { value: string; expiresAt: number } | null = null;
 let gisPromise: Promise<GoogleOAuth2> | null = null;
 
-export function getClientId(): string | null {
-  const fromEnv = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-  if (fromEnv) return fromEnv;
+/**
+ * Client ID OAuth dell'app pubblicata (progetto Google Cloud «diario-allenamenti").
+ * Non è un segreto: identifica l'app presso Google ed è valido solo per le origini autorizzate.
+ */
+export const BUILT_IN_CLIENT_ID = '998510680132-m1c29opu3fpo1hfd6lgs3jrd4do4onh6.apps.googleusercontent.com';
+
+function storedClientId(): string | null {
   try {
     return localStorage.getItem(CLIENT_ID_KEY) || null;
   } catch {
@@ -55,8 +59,14 @@ export function getClientId(): string | null {
   }
 }
 
-export function isClientIdFromEnv(): boolean {
-  return !!import.meta.env.VITE_GOOGLE_CLIENT_ID;
+/** Priorità: variabile di build → Client ID inserito dall'utente → Client ID integrato. */
+export function getClientId(): string | null {
+  return import.meta.env.VITE_GOOGLE_CLIENT_ID || storedClientId() || BUILT_IN_CLIENT_ID || null;
+}
+
+/** true se il Client ID non è stato inserito a mano (nessun campo da mostrare in Impostazioni). */
+export function isClientIdBuiltIn(): boolean {
+  return !storedClientId();
 }
 
 export function setClientId(id: string) {

@@ -195,8 +195,10 @@ L'app usa l'OAuth ufficiale di Google direttamente dal browser, con lo scope min
 
 ### 2. Configurare l'app
 
-- Opzione A (build): crea `.env.local` partendo da `.env.example` con `VITE_GOOGLE_CLIENT_ID=...` e rifai la build.
-- Opzione B (senza rebuild): nell'app, **Impostazioni → Backup e sincronizzazione**, incolla il Client ID e salva.
+L'app pubblicata su `https://reia-team.github.io/diario-allenamenti/` ha già integrato il Client ID del progetto `diario-allenamenti` (`BUILT_IN_CLIENT_ID` in `src/services/drive/googleAuth.ts`). Per usare un altro progetto Google Cloud:
+
+- Opzione A (build): crea `.env.local` partendo da `.env.example` con `VITE_GOOGLE_CLIENT_ID=...` (su GitHub: variabile di repository `VITE_GOOGLE_CLIENT_ID`) e rifai la build;
+- Opzione B: sostituisci `BUILT_IN_CLIENT_ID` nel codice.
 
 ### 3. Uso
 

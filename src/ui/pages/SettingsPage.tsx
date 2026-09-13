@@ -16,7 +16,7 @@ import { exportSetsCsv } from '../../services/backup/csv';
 import { beep, deviceCapabilities, requestNotificationPermission, unlockAudio, vibrate } from '../../services/feedback';
 import { logger } from '../../services/logger';
 import {
-  getClientId, hasValidToken, isClientIdFromEnv, setClientId, signIn, signOut,
+  getClientId, hasValidToken, isClientIdBuiltIn, setClientId, signIn, signOut,
 } from '../../services/drive/googleAuth';
 import {
   backupToDrive, countPendingChanges, createDriveClient, getSyncMeta, listDriveBackups, restoreFromDrive, syncWithDrive,
@@ -372,9 +372,9 @@ function DriveSection({ settings, update }: { settings: Settings; update: (p: Pa
         checked={settings.autoBackup}
         onChange={(v) => update({ autoBackup: v })}
       />
-      {!isClientIdFromEnv() && (
-        <button type="button" className="btn sm ghost" onClick={() => { setClientId(''); setClientIdState(''); void signOut(); setConnected(false); }}>
-          Cambia Client ID
+      {!isClientIdBuiltIn() && (
+        <button type="button" className="btn sm ghost" onClick={() => { setClientId(''); setClientIdState(getClientId() ?? ''); void signOut(); setConnected(false); }}>
+          Usa il Client ID predefinito
         </button>
       )}
 
