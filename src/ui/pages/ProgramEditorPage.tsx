@@ -1,6 +1,6 @@
 import { Link, useParams } from 'react-router';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { createTemplate, getProgram, listTemplates, listWorkoutExercises, moveTemplate, setActiveProgram, updateProgram } from '../../data/repo/programs';
+import { createTemplate, getProgram, listTemplatesWithCounts, moveTemplate, setActiveProgram, updateProgram } from '../../data/repo/programs';
 import { useSettings } from '../hooks';
 import { useAction } from '../toast';
 import { EmptyState, Field, PageHeader } from '../components/common';
@@ -10,11 +10,8 @@ import { IconChevronRight, IconDown, IconPlus, IconUp } from '../icons';
 export function ProgramEditorPage() {
   const { programId = '' } = useParams();
   const program = useLiveQuery(() => getProgram(programId).then((p) => p ?? null), [programId]);
-  const templates = useLiveQuery(() => listTemplates(programId), [programId]) ?? [];
-  const counts = useLiveQuery(
-    async () => Object.fromEntries(await Promise.all(templates.map(async (t) => [t.id, (await listWorkoutExercises(t.id)).length] as const))),
-    [templates.map((t) => t.id).join()],
-  ) ?? {};
+  const loadedTemplates = useLiveQuery(() => listTemplatesWithCounts(programId), [programId]);
+  const templates = loadedTemplates ?? [];
   const settings = useSettings();
   const run = useAction();
 
@@ -50,7 +47,9 @@ export function ProgramEditorPage() {
               <span className="code-badge">{t.code}</span>
               <Link to={`/programs/${program.id}/templates/${t.id}`} className="grow" style={{ color: 'inherit', textDecoration: 'none' }}>
                 <span className="strong">{t.name}</span>
-                <span className="small muted" style={{ display: 'block' }}>{counts[t.id] ?? 0} esercizi</span>
+                <span className="small muted" style={{ display: 'block' }}>
+                  {t.exerciseCount === 1 ? '1 esercizio' : `${t.exerciseCount} esercizi`}
+                </span>
               </Link>
               <button type="button" className="icon-btn" aria-label={`Sposta ${t.name} prima`} disabled={i === 0} onClick={() => run(() => moveTemplate(t.id, -1))}><IconUp /></button>
               <button type="button" className="icon-btn" aria-label={`Sposta ${t.name} dopo`} disabled={i === templates.length - 1} onClick={() => run(() => moveTemplate(t.id, 1))}><IconDown /></button>

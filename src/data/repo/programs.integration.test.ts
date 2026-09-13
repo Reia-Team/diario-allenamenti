@@ -3,7 +3,7 @@ import { at, exerciseInSession, freshDb } from '../testDb';
 import { SEED_PROGRAM_ID } from '../seed';
 import {
   addWorkoutExercise, codeForPosition, createProgram, createTemplate, deleteProgram, deleteTemplate, duplicateProgram,
-  listPrograms, listTemplates, listWorkoutExercises, moveTemplate, moveWorkoutExercise, removeWorkoutExercise,
+  listPrograms, listTemplates, listTemplatesWithCounts, listWorkoutExercises, moveTemplate, moveWorkoutExercise, removeWorkoutExercise,
   setProgramStatus, updateTemplate,
 } from './programs';
 import { createExercise, deleteExercise, listExercises, updateExercise } from './exercises';
@@ -40,6 +40,15 @@ describe('dati iniziali', () => {
     expect(b[0].notes).toBe('Riscaldamento');
     expect(b[8]).toMatchObject({ notes: 'Defaticamento', targetDurationSec: 600 });
     expect((await getSettings()).activeProgramId).toBe(SEED_PROGRAM_ID);
+  });
+
+  it('conteggio esercizi per scheda in un’unica lettura (esclusi quelli rimossi)', async () => {
+    expect((await listTemplatesWithCounts(SEED_PROGRAM_ID)).map((t) => [t.code, t.exerciseCount])).toEqual([['A', 9], ['B', 9]]);
+    const [first] = await listWorkoutExercises('seed-tpl-B');
+    await removeWorkoutExercise(first.id);
+    expect((await listTemplatesWithCounts(SEED_PROGRAM_ID)).map((t) => t.exerciseCount)).toEqual([9, 8]);
+    const empty = await createProgram({ name: 'Vuoto' });
+    expect(await listTemplatesWithCounts(empty.id)).toEqual([]);
   });
 
   it('il seed avviene una sola volta', async () => {

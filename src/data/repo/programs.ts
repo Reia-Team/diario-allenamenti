@@ -23,6 +23,17 @@ export async function listTemplates(programId: ID): Promise<WorkoutTemplate[]> {
   return all.filter(isAlive).sort((a, b) => a.position - b.position);
 }
 
+/** Schede del programma con il numero di esercizi, lette in un'unica query (nessun conteggio "0" provvisorio). */
+export async function listTemplatesWithCounts(programId: ID): Promise<(WorkoutTemplate & { exerciseCount: number })[]> {
+  const templates = await listTemplates(programId);
+  if (!templates.length) return [];
+  const wes = await db.workoutExercises.where('workoutTemplateId').anyOf(templates.map((t) => t.id)).toArray();
+  return templates.map((t) => ({
+    ...t,
+    exerciseCount: wes.filter((w) => isAlive(w) && w.workoutTemplateId === t.id).length,
+  }));
+}
+
 export async function getTemplate(id: ID): Promise<WorkoutTemplate | undefined> {
   const t = await db.workoutTemplates.get(id);
   return isAlive(t) ? t : undefined;
